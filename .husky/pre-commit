@@ -1,0 +1,3 @@
+echo "🕺 Permorming linting checks..."
+npm run lint
+echo "Your code is beatiful, nice job 👍"

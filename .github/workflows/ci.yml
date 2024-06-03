@@ -1,0 +1,44 @@
+name: Continuous Integration
+on:
+  push: # run on every push
+    branches: [ main ]
+  pull_request: # run on every pull request
+
+jobs:
+  build-n-test: # building smart contract, running lint and tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm i
+
+      - name: Compile smart contract
+        run: npm run compile
+
+      - name: Run linting checks
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test
+  
+  code-analysis: # static code analysis
+    runs-on: ubuntu-latest
+    permissions:
+      # required for uploading slither sarif results
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run static analysis with slither
+        uses: crytic/slither-action@v0.4.0
+        id: slither
+        continue-on-error: true
+        with:
+          sarif: results.sarif
+          slither-args: --filter-paths node_modules # exclude other contracts (open zeppelin ones)
+
+      - name: Upload static anaylisis SARIF output file # it should also add relevant comments on PR
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ steps.slither.outputs.sarif }}

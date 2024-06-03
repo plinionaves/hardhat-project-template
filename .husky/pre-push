@@ -1,0 +1,3 @@
+echo "🧪 Running the tests..."
+npm test
+echo "All tests passed 🚀"
