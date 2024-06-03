@@ -1,8 +1,5 @@
 import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
-import {
-  loadFixture,
-  time,
-} from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import { loadFixture, time } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { expect } from "chai";
 import hre from "hardhat";
 
@@ -40,13 +37,9 @@ describe("Lock", () => {
     });
 
     it("Should receive and store the funds to lock", async () => {
-      const { lock, lockedAmount } = await loadFixture(
-        deployOneYearLockFixture,
-      );
+      const { lock, lockedAmount } = await loadFixture(deployOneYearLockFixture);
 
-      expect(await hre.ethers.provider.getBalance(lock.target)).to.equal(
-        lockedAmount,
-      );
+      expect(await hre.ethers.provider.getBalance(lock.target)).to.equal(lockedAmount);
     });
 
     it("Should fail if the unlockTime is not in the future", async () => {
@@ -54,10 +47,7 @@ describe("Lock", () => {
       const latestTime = await time.latest();
       const Lock = await hre.ethers.getContractFactory("Lock");
       const deployPromise = Lock.deploy(latestTime, { value: 1 });
-      await expect(deployPromise).to.be.revertedWithCustomError(
-        Lock,
-        "UnlockTimeMustBeInFuture",
-      );
+      await expect(deployPromise).to.be.revertedWithCustomError(Lock, "UnlockTimeMustBeInFuture");
     });
   });
 
@@ -66,30 +56,24 @@ describe("Lock", () => {
       it("Should revert with the right error if called too soon", async () => {
         const { lock } = await loadFixture(deployOneYearLockFixture);
 
-        await expect(lock.withdraw()).to.be.revertedWithCustomError(
-          lock,
-          "YouCantWithdrawYet",
-        );
+        await expect(lock.withdraw()).to.be.revertedWithCustomError(lock, "YouCantWithdrawYet");
       });
 
       it("Should revert with the right error if called from another account", async () => {
-        const { lock, unlockTime, otherAccount } = await loadFixture(
-          deployOneYearLockFixture,
-        );
+        const { lock, unlockTime, otherAccount } = await loadFixture(deployOneYearLockFixture);
 
         // We can increase the time in Hardhat Network
         await time.increaseTo(unlockTime);
 
         // We use lock.connect() to send a transaction from another account
-        await expect(
-          lock.connect(otherAccount).withdraw(),
-        ).to.be.revertedWithCustomError(lock, "YouAreNotTheOwner");
+        await expect(lock.connect(otherAccount).withdraw()).to.be.revertedWithCustomError(
+          lock,
+          "YouAreNotTheOwner",
+        );
       });
 
       it("Shouldn't fail if the unlockTime has arrived and the owner calls it", async () => {
-        const { lock, unlockTime } = await loadFixture(
-          deployOneYearLockFixture,
-        );
+        const { lock, unlockTime } = await loadFixture(deployOneYearLockFixture);
 
         // Transactions are sent using the first signer by default
         await time.increaseTo(unlockTime);
@@ -100,23 +84,18 @@ describe("Lock", () => {
 
     describe("Events", () => {
       it("Should emit an event on withdrawals", async () => {
-        const { lock, unlockTime, lockedAmount } = await loadFixture(
-          deployOneYearLockFixture,
-        );
+        const { lock, unlockTime, lockedAmount } = await loadFixture(deployOneYearLockFixture);
 
         await time.increaseTo(unlockTime);
 
-        await expect(lock.withdraw())
-          .to.emit(lock, "Withdrawal")
-          .withArgs(lockedAmount, anyValue); // We accept any value as `when` arg
+        await expect(lock.withdraw()).to.emit(lock, "Withdrawal").withArgs(lockedAmount, anyValue); // We accept any value as `when` arg
       });
     });
 
     describe("Transfers", () => {
       it("Should transfer the funds to the owner", async () => {
-        const { lock, unlockTime, lockedAmount, owner } = await loadFixture(
-          deployOneYearLockFixture,
-        );
+        const { lock, unlockTime, lockedAmount, owner } =
+          await loadFixture(deployOneYearLockFixture);
 
         await time.increaseTo(unlockTime);
 
