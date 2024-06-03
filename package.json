@@ -38,7 +38,7 @@
     "@types/node": "^20.14.0",
     "chai": "^4.4.1",
     "ethers": "^6.12.2",
-    "hardhat": "^2.22.4",
+    "hardhat": "^2.22.5",
     "hardhat-gas-reporter": "^1.0.10",
     "husky": "^9.0.11",
     "solhint": "^5.0.1",
